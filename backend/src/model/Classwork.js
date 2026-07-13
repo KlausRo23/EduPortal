@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose, { mongo } from "mongoose";
 
 const classworkSchema = new mongoose.Schema({
     title: {
@@ -14,7 +14,7 @@ const classworkSchema = new mongoose.Schema({
     },
     classType: {
       type: String,
-      enum: ["lesson", "quiz", "activity", "project"],
+      enum: ["lesson", "quiz", "activity", "project", "assignment"],
       default: "lesson",
       required: true,
     },
@@ -30,14 +30,14 @@ const classworkSchema = new mongoose.Schema({
     },
     perfectScore: {
       type: Number,
-      min: 1,
+      min: 0,
       max: 100,
       default: 100,
     },
 
     submittedWork: [{
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Student",
+        ref: "submittedWork",
       },],
 
     comments: [{
@@ -48,6 +48,16 @@ const classworkSchema = new mongoose.Schema({
     dueDate: {
       type: Date,
     },
+    semester: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Setting",
+        required: true
+    },
+    course: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Course",
+        required: true
+    }
   },{timestamps: true,});
 
  const Classwork = mongoose.model("Classwork", classworkSchema);

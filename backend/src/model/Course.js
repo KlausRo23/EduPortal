@@ -18,6 +18,16 @@ const courseSchema = new mongoose.Schema({
         required: true,
         trim: true
     },
+    time: {
+        type: String,
+        required: true,
+        trim: true
+    },
+    day: {
+        type: String,
+        enum: ["Monday","Tuesday","Wendesday", "Thursday", "Friday", "Saturday"],
+        required: true
+    },
     enrolledStudents: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: "Student"
