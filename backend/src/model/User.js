@@ -31,6 +31,10 @@ const userSchema = new mongoose.Schema({
         enum: ["COE", "CCS", "COB", "none"],
         default: "none"
     },
+    profile: {
+        type: String,
+        required: false
+    },
     refreshToken: String
 }, {timestamps: true})
 
