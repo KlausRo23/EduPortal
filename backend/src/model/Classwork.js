@@ -1,5 +1,6 @@
 import mongoose, { mongo } from "mongoose";
 
+//This model is for teachers who will post works for student in their respective course
 const classworkSchema = new mongoose.Schema({
     title: {
       type: String,

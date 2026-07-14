@@ -1,37 +1,45 @@
-import mongoose from 'mongoose'
+import mongoose from "mongoose";
 
-const announcementSchema = new mongoose.Schema({
+// This model is for admin who will be sending announcements to users
+const announcementSchema = new mongoose.Schema(
+  {
     title: {
-        type: String,
-        required: true,
-        trim: true
+      type: String,
+      required: true,
+      trim: true,
     },
     message: {
-        type: String,
-        require: false,
-        trim: true
+      type: String,
+      required: false,
+      trim: true,
     },
     photoURL: {
-        type: String,
-        required: false,
-        trim: true
+      type: String,
+      required: false,
+      trim: true,
     },
     audience: {
-        type: String,
-        enumn: ["student", "teacher", "alxl"],
-        default: "all",
-        required: true
+      type: String,
+      enum: ["student", "teacher", "all"],
+      default: "all",
+      required: true,
     },
-    likedBy: [{
+    likedBy: [
+      {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "User"
-    }],
-    commentedBy: [{
+        ref: "User",
+      },
+    ],
+    commentedBy: [
+      {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Comment"
-    }]
-}, {timestamps: true})
+        ref: "Comment",
+      },
+    ],
+  },
+  { timestamps: true }
+);
 
-const Announcement = mongoose.model("Account", announcementSchema)
+const Announcement = mongoose.model("Announcement", announcementSchema);
 
-export default Announcement
+export default Announcement;

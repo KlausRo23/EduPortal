@@ -1,5 +1,6 @@
 import mongoose, { mongo } from "mongoose";
 
+//This model is for comment in announcement sent by admin
 const commentSchema = new mongoose.Schema({
     author: {
         type: mongoose.Schema.Types.ObjectId,

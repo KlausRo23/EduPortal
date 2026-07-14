@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 
+// For account creation
 const userSchema = new mongoose.Schema({
     username: {
         type: String,

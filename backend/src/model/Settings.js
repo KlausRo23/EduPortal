@@ -1,27 +1,31 @@
 import mongoose from "mongoose";
 
-const settingSchema = new mongoose.Schema({
+// Configuration model — admin controls the active semester, period, and school year
+const settingSchema = new mongoose.Schema(
+  {
     semester: {
-        type: String,
-        enum: ["1st semester", "2nd semester"],
-        default: "1st semester"
+      type: String,
+      enum: ["1st semester", "2nd semester"],
+      default: "1st semester",
     },
     period: {
-        type: String,
-        enum: ["midterms", "finals"],
-        default: "midterms"
+      type: String,
+      enum: ["midterm", "finals"],
+      default: "midterm",
     },
     schoolYear: {
-        type: Number,
-        max: 9,
-        required: true
+      type: String,
+      required: true,
+      trim: true,
     },
-    isACtive: {
-        type: Boolean,
-        default: true
-    }
-}, {timestamps: true})
+    isActive: {
+      type: Boolean,
+      default: true,
+    },
+  },
+  { timestamps: true }
+);
 
-const Setting = mongoose.model("Setting", settingSchema)
+const Setting = mongoose.model("Setting", settingSchema);
 
-export default Setting
+export default Setting;
