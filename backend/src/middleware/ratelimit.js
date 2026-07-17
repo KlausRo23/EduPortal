@@ -12,6 +12,12 @@ export const loginLimit = ratelimit({
     message: "Slow down you're logging in too fast"
 })
 
+export const registerLimit = ratelimit({
+    windowMs: 2 * 60 * 1000,
+    max: 3,
+    message: "Slow down you're logging in too fast"
+})
+
 export const submitLimit = ratelimit({
     windowMs: 3 * 60 * 1000,
     max: 5,
