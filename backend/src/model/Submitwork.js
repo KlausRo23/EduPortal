@@ -35,13 +35,7 @@ const submittedWorkSchema = new mongoose.Schema(
       min: 0,
       default: 0,
     },
-
-    feedback: {
-      type: String,
-      trim: true,
-      maxlength: 1000,
-    },
-
+    
     status: {
       type: String,
       // "Absent" — auto-set by attendanceService when student was absent on due date

@@ -1,16 +1,23 @@
 import mongoose from "mongoose";
 
+/**
+ * GradeWeight Model — EduPortal
+ *
+ * Pure schema only. Validation logic lives here as pre-save hooks
+*/
+
 const classStandingComponentSchema = new mongoose.Schema(
   {
-    // e.g. "quiz", "activity", "assignment", "project", "recitation", "seatwork"
+    // Must match a Classwork.classType value (e.g. "quiz", "activity", "assignment")
+    // This is how gradeService maps submitted scores → grade components automatically
     name: {
       type: String,
       required: true,
       trim: true,
       lowercase: true,
     },
-
-    // e.g. if classStandingWeight=80 and quiz weight=40,
+    // Percentage of the class standing slice (not of the total grade)
+    // e.g. weight: 40 means 40% of classStandingWeight
     weight: {
       type: Number,
       required: true,
@@ -28,20 +35,18 @@ const gradeWeightSchema = new mongoose.Schema(
       ref: "Course",
       required: true,
     },
-
     semester: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Setting",
       required: true,
     },
-
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
     },
 
-    // Weight allocated to the exam component (out of 100 total)
+    // Weight of the exam out of total 100
     examWeight: {
       type: Number,
       required: true,
@@ -49,7 +54,7 @@ const gradeWeightSchema = new mongoose.Schema(
       max: 99,
     },
 
-    // Weight allocated to class standing as a whole (out of 100 total)
+    // Weight of class standing out of total 100
     // Must satisfy: examWeight + classStandingWeight === 100
     classStandingWeight: {
       type: Number,
@@ -58,51 +63,45 @@ const gradeWeightSchema = new mongoose.Schema(
       max: 99,
     },
 
-    // Flexible components that make up the class standing slice
-    // Their individual weights must sum to 100 (percentage of the CS slice)
+    // Flexible sub-components of class standing
+    // Their weights must sum to 100 (as percentages of the CS slice)
     classStandingComponents: {
       type: [classStandingComponentSchema],
       validate: {
-        validator: function (components) {
+        validator(components) {
           if (!components || components.length === 0) return false;
           const total = components.reduce((sum, c) => sum + c.weight, 0);
           return Math.round(total) === 100;
         },
         message:
-          "classStandingComponents weights must sum to exactly 100. " +
-          "They represent percentages of the class standing slice.",
+          "classStandingComponents weights must sum to 100 — they are percentages of the class standing slice.",
       },
     },
 
-    // Midterm vs Finals period weight split for the final grade
+    // How midterm and finals are weighted toward the final grade
     // Default: Midterm 40% + Finals 60%
     midtermWeight: {
       type: Number,
       required: true,
       min: 1,
       max: 99,
-      default: 50,
+      default: 40,
     },
-
     finalsWeight: {
       type: Number,
       required: true,
       min: 1,
       max: 99,
-      default: 50,
+      default: 60,
     },
   },
   { timestamps: true }
 );
 
-// ---------------------------------------------------------------------------
-// Compound index — one weight config per course per semester
-// ---------------------------------------------------------------------------
+// One weight config per course per semester
 gradeWeightSchema.index({ course: 1, semester: 1 }, { unique: true });
 
-// ---------------------------------------------------------------------------
-// Validator: examWeight + classStandingWeight must equal 100
-// ---------------------------------------------------------------------------
+// Schema-level constraint: weights must add up correctly
 gradeWeightSchema.pre("save", function (next) {
   if (this.examWeight + this.classStandingWeight !== 100) {
     return next(
@@ -111,7 +110,6 @@ gradeWeightSchema.pre("save", function (next) {
       )
     );
   }
-
   if (this.midtermWeight + this.finalsWeight !== 100) {
     return next(
       new Error(
@@ -119,39 +117,8 @@ gradeWeightSchema.pre("save", function (next) {
       )
     );
   }
-
   next();
 });
-
-// ---------------------------------------------------------------------------
-// Instance method: Returns a human-readable breakdown of the weight structure
-//
-// Usage: weightConfig.describe()
-//
-// Output example:
-//   Exam: 20% of total
-//   Class Standing: 80% of total
-//     └─ quiz: 40% of CS → 32% of total grade
-//     └─ activity: 30% of CS → 24% of total grade
-//     └─ assignment: 30% of CS → 24% of total grade
-// ---------------------------------------------------------------------------
-gradeWeightSchema.methods.describe = function () {
-  const lines = [
-    `Exam: ${this.examWeight}% of total`,
-    `Class Standing: ${this.classStandingWeight}% of total`,
-  ];
-
-  for (const c of this.classStandingComponents) {
-    const effectiveWeight = ((c.weight / 100) * this.classStandingWeight).toFixed(1);
-    lines.push(
-      `  └─ ${c.name}: ${c.weight}% of CS → ${effectiveWeight}% of total grade`
-    );
-  }
-
-  lines.push(`Period split: Midterm ${this.midtermWeight}% / Finals ${this.finalsWeight}%`);
-
-  return lines.join("\n");
-};
 
 const GradeWeight = mongoose.model("GradeWeight", gradeWeightSchema);
 
